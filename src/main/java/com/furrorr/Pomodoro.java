@@ -41,9 +41,7 @@ public class Pomodoro {
                         }
                         isTest = false;
                     }
-                    default -> {
-                        System.out.println("Введите команду из доступных. Для справки введите '-help'.");
-                    }
+                    default -> System.out.println("Введите команду из доступных. Для справки введите '-help'.");
                 }
             }
         }
