@@ -6,62 +6,70 @@ import java.util.concurrent.TimeUnit;
 
 public class Pomodoro {
 
-    static boolean isTest = false;
+    static boolean isTest = true;
+    static boolean isCallHelp = false;
+    public static int test = 0;
 
     public static void main(String[] args) throws InterruptedException {
 
-        /*
-        -w 1 -b 1 -count 1
-        [-w, 1, -b, 1, -count, 1]
+        System.out.println("-------------Hello pomodoro!-------------");
 
-                -добавить проверки пользовательнского ввода
-         */
-
-        System.out.println("\tHello pomidoro! \nНапиши пожалуйста команду в виде " +
-                "\"-w [число] -b [число] -count [число]\", " +
-                "\nгде \'-w\' это количество минут работы, \'-b\' это количество  минут отдыха, " +
-                "а \'-count\' это количство повторений круга.");
-
-        // считываем пользовательский ввод
-        String[] cmd = new Scanner(System.in).nextLine().split(" ");
-
-        // выводим, что получилось
-        System.out.println("Ваш запрос: " + Arrays.toString(cmd));
-
-        // время работы
         int workMinutes = 25;
-        // время отдыхка
         int breakMinutes = 5;
-        // количество подходов
         int count = 1;
+        int sizePrint = 60;
 
-        // длина рисунка progress bar
-        int sizePrint = 30;
-
-        boolean isCallHelp = false;
-
-        for (int i = 0; i < cmd.length; i++) {
-            switch (cmd[i]) {
-                case "-help" -> {
-                    printHelpMessage();
-                    isCallHelp = true;
+        while(isTest) {
+            System.out.print("Команда: ");
+            String[] cmd = new Scanner(System.in).nextLine().split(" ");
+            for (int i = 0; i < cmd.length; i++) {
+                switch (cmd[i]) {
+                    case "-help" -> printHelpMessage();
+                    case "-w" -> {
+                        if (cmd[++i].equals("-b")) {
+                            --i;
+                        } else workMinutes = Integer.parseInt(cmd[i]);
+                    }
+                    case "-b" -> {
+                        if (cmd[++i].equals("-c")) {
+                            --i;
+                        } else breakMinutes = Integer.parseInt(cmd[i]);
+                    }
+                    case "-c" -> {
+                        if (i != cmd.length - 1) {
+                            count = Integer.parseInt(cmd[++i]);
+                        }
+                        isTest = false;
+                    }
+                    default -> {
+                        System.out.println("Введите команду из доступных. Для справки введите '-help'.");
+                    }
                 }
-                case "-w" -> workMinutes = Integer.parseInt(cmd[++i]);
-                case "-b" -> breakMinutes = Integer.parseInt(cmd[++i]);
-                case "-count" -> count = Integer.parseInt(cmd[++i]);
-                case "-t" -> isTest = true;
             }
         }
         if (!isCallHelp) {
-            System.out.printf("Работаем %d min, отдыхаем %d min," +
-                    " повторям круг %d раз", workMinutes, breakMinutes, count);
-            long startTime = System.currentTimeMillis();
-            for (int i = 1; i <= count; i++) {
-                timer(workMinutes, breakMinutes, sizePrint);
+            if (workMinutes > 0 && breakMinutes > 0 && count > 0){
+                System.out.printf("Работаем %d min, отдыхаем %d min," +
+                        " повторям круг %d раз\n", workMinutes, breakMinutes, count);
+                long startTime = System.currentTimeMillis();
+                for (int i = 1; i <= count; i++) {
+                    timer(workMinutes, breakMinutes, sizePrint);
+                }
+                long endTime = System.currentTimeMillis();
+                System.out.println("Pomodoro таймер истек: " + (endTime - startTime) / (1000 * 60));
+            } else {
+                numberLessZero(workMinutes, breakMinutes);
             }
-            long endTime = System.currentTimeMillis();
-            System.out.println("Pomodoro таймер истек: " + (endTime - startTime) / (1000 * 60));
         }
+        System.out.println("-------------Bye pomodoro!-------------");
+    }
+
+    private static void numberLessZero(int workMinutes, int breakMinutes) {
+        if (workMinutes < 0)
+            System.out.println("Значение '-w' отрицательное");
+        else if (breakMinutes < 0)
+            System.out.println("Значение '-b' отрицательное");
+        else System.out.println("Значение '-c' отрицательное");
     }
 
     private static void timer(int workTime, int breakTime, int sizeProgressBar) throws InterruptedException {
@@ -72,25 +80,25 @@ public class Pomodoro {
     private static void printProgress(String process, int time, int size) throws InterruptedException {
         int length;
         int rep;
-        length = 60* time / size;
-        rep = 60* time /length;
-        int stretchb = size /(3* time);
-        for(int i=1; i <= rep; i++){
+        length = 60 * time / size;
+        rep = 60 * time /length;
+        double stretchb = size /(3.0 * time);
+        for(int i = 1; i <= rep; i++){
             double x = i;
-            x = 1.0/3.0 *x;
+            x = 1.0 / 3.0 * x;
             x *= 10;
             x = Math.round(x);
             x /= 10;
-            double w = time *stretchb;
-            double percent = (x/w) *1000;
-            x /=stretchb;
+            double w = time * stretchb;
+            double percent = (x / w) * 1000;
+            x /= stretchb;
             x *= 10;
             x = Math.round(x);
             x /= 10;
             percent = Math.round(percent);
             percent /= 10;
             System.out.print(process + percent+"% " + (" ").repeat(5 - (String.valueOf(percent).length())) +"[" + ("#").repeat(i) + ("-").repeat(rep - i)+"]    ( " + x +"min / " + time +"min )"+  "\r");
-            if(!isTest){
+            if(test == 0){
                 TimeUnit.SECONDS.sleep(length);
             }
         }
@@ -99,11 +107,12 @@ public class Pomodoro {
 
     private static void printHelpMessage() {
         System.out.println();
-        System.out.println("\tPomodoro - сделай своё время более эффективным!");
-        System.out.println();
+        System.out.println("\tПривет! Пиши команду в виде -w [время] -b [время] -c [время]");
+        System.out.println("\tПример: [ -w 20 -b 5 -count 1 ] - эта команда поставит таймер на 20 минуты работы, 5 минут отдыха и все это на один круг!");
         System.out.println("\t-w [time]: время работы, сколько хочешь работать.");
         System.out.println("\t-b [time]: время отдыха, сколько хочешь отдыхать.");
-        System.out.println("\t-count [count]: - количество итераций.");
+        System.out.println("\t-c [count]: - количество итераций.");
         System.out.println();
+        isCallHelp = true;
     }
 }
